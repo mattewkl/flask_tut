@@ -24,9 +24,9 @@ def register():
         error = None
         # обрабатываем отсутствие пароля или юзернейма
         if not username:
-            error = 'Юзернейм введи'
+            error = 'Username is required.'
         elif not password:
-            error = 'Пароль введи'
+            error = 'Password is required.'
 
         if error is None:
             try:
@@ -36,7 +36,7 @@ def register():
                 )
                 db.commit() # закрепление изменений в  датабейзе
             except db.IntegrityError:
-                error = f'User {username} уже существует' #обработка ошибок если юзернейм уже существует
+                error = f'User {username} already registered' #обработка ошибок если юзернейм уже существует
             else:
                 return redirect(url_for('auth.login')) # при успешной регистрации отправляет на логин страниц
 
@@ -59,17 +59,17 @@ def login():
         ).fetchone() # возвращает строку, если результат пустой, возвращает None
 
         if user is None:
-            error = 'Нет такого пользователя'
+            error = 'Username not found'
         elif not check_password_hash(user['password'], password):
             # сравнивает хэш пассворда уже существующего и введенного
-            error = 'Неверный пароль'
+            error = 'Wrong password'
 
         if error is None:
             session.clear() # словарь, который содержит айди валидированных сессий
             session['user_id'] = user['id']
             return redirect(url_for('index'))
-
-        flash(error)
+        else:
+            flash(error)
 
     return render_template('auth/login.html')
 
@@ -99,5 +99,5 @@ def login_required(view):
         if g.user is None:
             return redirect(url_for('auth.login'))
 
-        return view
+        return view(**kwargs)
     return wrapped_view
