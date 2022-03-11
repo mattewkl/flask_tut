@@ -54,7 +54,7 @@ def create():
     if request.method == "POST":
         title = request.form["title"]
         body = request.form["body"]
-        carma = 1
+        carma = 0
         error = None
 
         if not title:
@@ -103,9 +103,31 @@ def update(id):
 def upvote(id):
     get_post(id)
     db = get_db()
-    db.execute('UPDATE post '
-               'SET carma = carma + 1 '
-               'WHERE id = ?', (id,))
+    voted_tuple = db.execute('SELECT voted FROM carma WHERE user_id = ?', (g.user['id'],)).fetchall()
+    if voted_tuple:
+        voted = voted_tuple[0][0]
+        if voted == 0:
+            db.execute('UPDATE post '
+                       'SET carma = carma + 1 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 1 WHERE user_id = ?',(g.user['id'],))
+        elif voted == 1:
+            db.execute('UPDATE post '
+                       'SET carma = carma - 1 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 0 WHERE user_id = ?', (g.user['id'],))
+        else:
+            db.execute('UPDATE post '
+                       'SET carma = carma + 2 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 1 WHERE user_id = ?', (g.user['id'],))
+    else:
+        vote = 1
+        db.execute('INSERT INTO carma (post_id, user_id, voted) VALUES (?,?, ?)',
+                   (id, g.user['id'], vote,))
+        db.execute('UPDATE post '
+                   'SET carma = carma + 1 '
+                   'WHERE id = ?', (id,))
     db.commit()
 
     return redirect(url_for('blog.index'))
@@ -116,9 +138,31 @@ def upvote(id):
 def downvote(id):
     get_post(id)
     db = get_db()
-    db.execute('UPDATE post '
-               'SET carma = carma - 1 '
-               'WHERE id = ?', (id,))
+    voted_tuple = db.execute('SELECT voted FROM carma WHERE user_id = ?', (g.user['id'],)).fetchall()
+    if voted_tuple:
+        voted = voted_tuple[0][0]
+        if voted == 0:
+            db.execute('UPDATE post '
+                       'SET carma = carma - 1 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 2 WHERE user_id = ?', (g.user['id'],))
+        elif voted == 1:
+            db.execute('UPDATE post '
+                       'SET carma = carma - 2 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 2 WHERE user_id = ?', (g.user['id'],))
+        else:
+            db.execute('UPDATE post '
+                       'SET carma = carma + 1 '
+                       'WHERE id = ?', (id,))
+            db.execute('UPDATE carma SET voted = 0 WHERE user_id = ?', (g.user['id'],))
+    else:
+        vote = 2
+        db.execute('INSERT INTO carma (post_id, user_id, voted) VALUES (?,?, ?)',
+                   (id, g.user['id'], vote,))
+        db.execute('UPDATE post '
+                   'SET carma = carma - 1 '
+                   'WHERE id = ?', (id,))
     db.commit()
 
     return redirect(url_for('blog.index'))
