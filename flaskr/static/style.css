@@ -26,7 +26,7 @@ nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; }
   font-size: 0.85rem; padding: 20px 0; line-height: 1.6; background: #333333;
 }
 .container {
-    margin: 0 auto; max_width: 800px; width: 100%; padding: 0 15px; box-sizing: border-box
+    margin: 0 auto; max_width: 800px; width: 100%; padding: 0 15px; box-sizing: border-box;
 }
 .footer__text, .footer__link, .footer__title {
     color: #aaaaaa; padding: 3px 15px; display: block;
