@@ -6,7 +6,6 @@
     <a class="action" href="{{ url_for('blog.create') }}">New</a>
   {% endif %}
 {% endblock %}
-
 {% block content %}
   {% for post in posts %}
     <article class="post">
@@ -22,10 +21,14 @@
       <p class="body">{{ post['body'] }}</p>
     </article>
     <body>
-    <div class="container", align="center">
+    <div class="container" align="end">
         <p class="body">Karma: {{ post['carma'] }}</p>
-        <a href="{{ url_for('blog.upvote', id=post['id']) }}">Upvote</a>
-        <a href="{{ url_for('blog.downvote', id=post['id']) }}">Downvote</a>
+        <a href="{{ url_for('blog.upvote', id=post['id']) }}">
+          <img src="https://static.thenounproject.com/png/136236-200.png" height="25px" width="25px">
+        </a>
+        <a href="{{ url_for('blog.downvote', id=post['id']) }}">
+          <img src="https://static.thenounproject.com/png/136236-200.png" class="img_turn_180" height="25px" width="25px">
+        </a>
       </div>
     </body>
     {% if not loop.last %}

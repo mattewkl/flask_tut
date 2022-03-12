@@ -53,6 +53,10 @@ nav ul li a, nav ul li span, header .action { display: block; padding: 0.5rem; }
 .footer__link:hover {
     color: #cccccc; background: rgba(255, 255, 255, 0.2);
 }
+.img_turn_180 {transform: rotate(180deg)};
+input[type=radio]:checked~label {
+  background-color: green;
+}
 input.danger { color: #cc2f2e; }
 input[type=submit] { align-self: start; min-width: 10em; }<style>
 
