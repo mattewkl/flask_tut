@@ -88,3 +88,89 @@ def test_delete(client, auth, app):
         post = db.execute('SELECT * FROM post WHERE id = 1').fetchone()
         # проверяем что поста нет после удаления
         assert post is None
+
+def test_upvote(client, auth, app):
+    auth.login()
+    # перед тестом строка в таблице кармы еще не создана
+    with app.app_context():
+        db = get_db()
+        karma = db.execute('SELECT * FROM carma WHERE user_id = 1').fetchone()
+        assert karma is None
+    assert client.get('/1/upvote').status_code == 302
+    response = client.post('/1/upvote')
+    assert response.headers['Location'] == 'http://localhost/'
+    with app.app_context():
+        db = get_db()
+        karma = db.execute('SELECT * FROM carma WHERE user_id = 1').fetchone()
+        assert karma is not None
+    with app.app_context():
+        db = get_db()
+        # выставляем карму и выставляем значение ГОЛОСОВАЛ -
+        db.execute('UPDATE carma SET voted = 2 WHERE user_id = 1')
+        db.execute('UPDATE post SET carma = - 1 WHERE id = 1')
+        #апвоутим
+        client.post('/1/upvote')
+        right_count = db.execute('SELECT * FROM post WHERE carma = 1').fetchone()
+        assert right_count is not None
+        karma = db.execute('SELECT * FROM carma WHERE voted = 1').fetchone()
+        assert karma is not None
+        # карма должна стать +1, значение - ГОЛОСОВАЛ +
+        client.post('/1/upvote')
+        # апвоутим
+        karma = db.execute('SELECT * FROM carma WHERE voted = 0').fetchone()
+        assert karma is not None
+        right_count = db.execute('SELECT * FROM post WHERE carma = 0').fetchone()
+        assert right_count is not None
+        # карма становится 0, значение НЕ ГОЛОСОВАЛ
+        client.post('/1/upvote')
+        # апвоутим
+        karma = db.execute('SELECT * FROM carma WHERE voted = 1').fetchone()
+        assert karma is not None
+        right_count = db.execute('SELECT * FROM post WHERE carma = 1').fetchone()
+        assert right_count is not None
+        # проверяем, что карма выросла а значение стало ГОЛОСОВАЛ +
+
+
+def test_downvote(client, auth, app):
+    auth.login()
+    # перед тестом строка в таблице кармы еще не создана
+    with app.app_context():
+        db = get_db()
+        karma = db.execute('SELECT * FROM carma WHERE user_id = 1').fetchone()
+        assert karma is None
+    assert client.get('/1/downvote').status_code == 302
+    response = client.post('/1/downvote')
+    assert response.headers['Location'] == 'http://localhost/'
+    with app.app_context():
+        db = get_db()
+        karma = db.execute('SELECT * FROM carma WHERE user_id = 1').fetchone()
+        assert karma is not None
+    with app.app_context():
+        db = get_db()
+        # выставляем карму и выставляем значение ГОЛОСОВАЛ +
+        db.execute('UPDATE carma SET voted = 1 WHERE user_id = 1')
+        db.execute('UPDATE post SET carma = 1 WHERE id = 1')
+        #даунвоутим
+        client.post('/1/downvote')
+        right_count = db.execute('SELECT * FROM post WHERE carma = -1').fetchone()
+        assert right_count is not None
+        karma = db.execute('SELECT * FROM carma WHERE voted = 2').fetchone()
+        assert karma is not None
+        # карма должна стать -1, значение - ГОЛОСОВАЛ -
+        client.post('/1/downvote')
+        #даунвоутим
+        karma = db.execute('SELECT * FROM carma WHERE voted = 0').fetchone()
+        assert karma is not None
+        right_count = db.execute('SELECT * FROM post WHERE carma = 0').fetchone()
+        assert right_count is not None
+        # карма становится 0, значение НЕ ГОЛОСОВАЛ
+        client.post('/1/downvote')
+        # даунвоутим
+        karma = db.execute('SELECT * FROM carma WHERE voted = 2').fetchone()
+        assert karma is not None
+        right_count = db.execute('SELECT * FROM post WHERE carma = -1').fetchone()
+        assert right_count is not None
+        # проверяем, что карма упала а значение стало ГОЛОСОВАЛ -
+
+
+
